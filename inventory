@@ -1,4 +1,4 @@
-lab01.basselgia.local
-lab02.basselgia.local
-lab03.basselgia.local
+lab01.basselgia.local apache_package=httpd php_package=php
+lab02.basselgia.local apache_package=httpd php_package=php
+lab03.basselgia.local apache_package=httpd php_package=php
 
