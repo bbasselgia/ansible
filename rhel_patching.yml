@@ -1,0 +1,69 @@
+---
+
+- name: Patch RHEL Servers
+
+  hosts: all # Replace with your inventory group
+  become: yes # Run tasks with elevated privileges (sudo)
+  gather_facts: yes # Gather system facts for conditional logic
+
+  vars:
+
+    reboot_required: false # Flag to track if a reboot is needed
+
+  tasks:
+
+    - name: Ensure DNF cache is clean
+
+      ansible.builtin.command: dnf clean all
+
+    - name: Update all packages
+
+      ansible.builtin.dnf:
+
+        name: "*"
+
+        state: latest
+
+        disable_excludes: "main" # Important to ensure all updates are considered
+
+      register: dnf_update_result
+
+
+    - name: Check if a reboot is required
+
+      ansible.builtin.stat:
+
+        path: /var/run/reboot-required
+
+      register: reboot_file_status
+
+
+    - name: Set reboot_required flag if a reboot is needed
+
+      ansible.builtin.set_fact:
+
+        reboot_required: true
+
+      when: reboot_file_status.stat.exists #or dnf_update_result.reboot_required
+
+
+    - name: Reboot server if required
+
+      ansible.builtin.reboot:
+
+        reboot_timeout: 600 # Wait up to 10 minutes for reboot
+
+      when: reboot_required
+
+
+    - name: Verify system is up and reachable after reboot
+
+      ansible.builtin.wait_for_connection:
+
+        timeout: 300 # Wait up to 5 minutes for SSH connection
+
+      when: reboot_required
+
+
+
+
